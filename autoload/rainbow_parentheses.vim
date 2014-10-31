@@ -58,6 +58,14 @@ function! rainbow_parentheses#deactivate()
   endif
 endfunction
 
+function! rainbow_parentheses#toggle()
+  if exists('b:rainbow_max_level')
+    call rainbow_parentheses#deactivate()
+  else
+    call rainbow_parentheses#activate()
+  endif
+endfunction
+
 function! s:regions(max)
   let pairs = get(g:, 'rainbow#pairs', [['(',')']])
   for level in range(1, a:max)

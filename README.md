@@ -20,6 +20,9 @@ Plug 'junegunn/rainbow_parentheses.vim'
 
 " Deactivate
 :RainbowParentheses!
+
+" Toggle
+:RainbowParentheses!!
 ```
 
 ## Customization

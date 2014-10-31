@@ -3,9 +3,11 @@
 "               by Martin Krischik and others.
 "==============================================================================
 
-command! -bang RainbowParentheses
-  \   if empty('<bang>')
+command! -bang -nargs=? -bar RainbowParentheses
+  \  if empty('<bang>')
   \|   call rainbow_parentheses#activate()
+  \| elseif <q-args> == '!'
+  \|   call rainbow_parentheses#toggle()
   \| else
   \|   call rainbow_parentheses#deactivate()
   \| endif
