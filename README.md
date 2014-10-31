@@ -1,6 +1,7 @@
 # ~~Better~~ Much simpler Rainbow Parentheses
 
-A heavily rewritten fork of [kien/rainbow_parentheses.vim][k].
+A heavily-rewritten fork of [kien/rainbow_parentheses.vim][k].
+
 The default colors were taken from [VimClojure][v].
 
 ## Installation
@@ -11,7 +12,17 @@ Using [vim-plug](https://github.com/junegunn/vim-plug):
 Plug 'junegunn/rainbow_parentheses.vim'
 ```
 
-## Options
+## Commands
+
+```vim
+" Activate
+:RainbowParentheses
+
+" Deactivate
+:RainbowParentheses!
+```
+
+## Customization
 
 ```vim
 let g:rainbow#max_level = 16
@@ -40,16 +51,6 @@ let g:rainbow#colors = {
 \     ['darkmagenta', 'darkviolet'    ]
 \   ]
 \ }
-```
-
-## Commands
-
-```vim
-" Activate
-:RainbowParentheses
-
-" Deactivate
-:RainbowParentheses!
 ```
 
 [k]: https://github.com/kien/rainbow_parentheses.vim
