@@ -42,7 +42,7 @@ function! s:extract_colors()
     silent hi
   redir END
   let lines = filter(split(colors, '\n'), 'v:val =~# "fg" && v:val !~# "bg"')
-  return map(reverse(s:uniq(map(lines, 's:extract_fg(v:val)'))), 's:colors_to_hi(v:val)')
+  return map(s:uniq(reverse(map(lines, 's:extract_fg(v:val)'))), 's:colors_to_hi(v:val)')
 endfunction
 
 function! rainbow_parentheses#activate()
