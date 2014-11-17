@@ -3,6 +3,24 @@
 "               by Martin Krischik and others.
 "==============================================================================
 
+function! s:uniq(list)
+  let ret = []
+  let map = {}
+  for items in a:list
+    let ok = 1
+    for item in filter(copy(items), '!empty(v:val)')
+      if has_key(map, item)
+        let ok = 0
+      endif
+      let map[item] = 1
+    endfor
+    if ok
+      call add(ret, items)
+    endif
+  endfor
+  return ret
+endfunction
+
 function! s:colors_to_hi(colors)
   return
     \ join(
@@ -14,8 +32,9 @@ function! s:colors_to_hi(colors)
 endfunction
 
 function! s:extract_fg(line)
-  let match = matchlist(a:line, 'ctermfg=\(\S*\)\|guifg=\(\S*\)')
-  return s:colors_to_hi(match[1:2])
+  let cterm = get(matchlist(a:line, 'ctermfg=\(\S*\)'), 1, '')
+  let gui = get(matchlist(a:line, 'guifg=\(\S*\)'), 1, '')
+  return [cterm, gui]
 endfunction
 
 function! s:extract_colors()
@@ -23,7 +42,7 @@ function! s:extract_colors()
     silent hi
   redir END
   let lines = filter(split(colors, '\n'), 'v:val =~# "fg" && v:val !~# "bg"')
-  return reverse(uniq(map(lines, 's:extract_fg(v:val)')))
+  return map(reverse(s:uniq(map(lines, 's:extract_fg(v:val)'))), 's:colors_to_hi(v:val)')
 endfunction
 
 function! rainbow_parentheses#activate()
