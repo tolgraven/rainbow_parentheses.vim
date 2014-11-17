@@ -3,38 +3,38 @@
 "               by Martin Krischik and others.
 "==============================================================================
 
-let s:default_colors = {
-\   'dark': [
-\     ['yellow',  'orange1'     ],
-\     ['green',   'yellow1'     ],
-\     ['cyan',    'greenyellow' ],
-\     ['magenta', 'green1'      ],
-\     ['red',     'springgreen1'],
-\     ['yellow',  'cyan1'       ],
-\     ['green',   'slateblue1'  ],
-\     ['cyan',    'magenta1'    ],
-\     ['magenta', 'purple1'     ]
-\   ],
-\   'light': [
-\     ['darkyellow',  'orangered3'    ],
-\     ['darkgreen',   'orange2'       ],
-\     ['blue',        'yellow3'       ],
-\     ['darkmagenta', 'olivedrab4'    ],
-\     ['red',         'green4'        ],
-\     ['darkyellow',  'paleturquoise3'],
-\     ['darkgreen',   'deepskyblue4'  ],
-\     ['blue',        'darkslateblue' ],
-\     ['darkmagenta', 'darkviolet'    ]
-\   ]
-\ }
+function! s:colors_to_hi(colors)
+  return
+    \ join(
+    \   values(
+    \     map(
+    \       filter({ 'ctermfg': a:colors[0], 'guifg': a:colors[1] },
+    \              '!empty(v:val)'),
+    \       'v:key."=".v:val')), ' ')
+endfunction
+
+function! s:extract_fg(line)
+  let match = matchlist(a:line, 'ctermfg=\(\S*\)\|guifg=\(\S*\)')
+  return s:colors_to_hi(match[1:2])
+endfunction
+
+function! s:extract_colors()
+  redir => colors
+    silent hi
+  redir END
+  let lines = filter(split(colors, '\n'), 'v:val =~# "fg" && v:val !~# "bg"')
+  return reverse(uniq(map(lines, 's:extract_fg(v:val)')))
+endfunction
 
 function! rainbow_parentheses#activate()
   let max = get(g:, 'rainbow#max_level', 16)
-  let colors = get(g:, 'rainbow#colors', s:default_colors)[&background]
+  let colors = exists('g:rainbow#colors') ?
+    \ map(copy(g:rainbow#colors[&bg]), 's:colors_to_hi(v:val)') :
+    \ s:extract_colors()
 
   for level in range(1, max)
-    let [c, g] = colors[(level - 1) % len(colors)]
-    execute printf('hi rainbowParensShell%d ctermfg=%s guifg=%s', max - level + 1, c, g)
+    let col = colors[(level - 1) % len(colors)]
+    execute printf('hi rainbowParensShell%d %s', max - level + 1, col)
   endfor
   call s:regions(max)
 
