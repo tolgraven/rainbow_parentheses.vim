@@ -25,6 +25,9 @@ Plug 'junegunn/rainbow_parentheses.vim'
 
 " Toggle
 :RainbowParentheses!!
+
+" Activate it by default
+autocmd VimEnter * RainbowParentheses
 ```
 
 ## Customization
