@@ -68,6 +68,7 @@ function! rainbow_parentheses#deactivate()
   if exists('b:rainbow_max_level')
     for level in range(1, b:rainbow_max_level)
       execute 'hi clear rainbowParensShell'.level
+      execute 'syntax clear rainbowParens'.level
     endfor
     augroup rainbow_parentheses
       autocmd!
