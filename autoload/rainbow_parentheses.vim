@@ -45,6 +45,12 @@ function! s:extract_colors()
   return map(s:uniq(reverse(map(lines, 's:extract_fg(v:val)'))), 's:colors_to_hi(v:val)')
 endfunction
 
+function! s:show_colors()
+  for level in reverse(range(1, b:rainbow_max_level))
+    execute 'hi rainbowParensShell'.level
+  endfor
+endfunction
+
 function! rainbow_parentheses#activate()
   let max = get(g:, 'rainbow#max_level', 16)
   let colors = exists('g:rainbow#colors') ?
@@ -57,6 +63,7 @@ function! rainbow_parentheses#activate()
   endfor
   call s:regions(max)
 
+  command! -bang -nargs=? -bar RainbowParenthesesColors call s:show_colors()
   augroup rainbow_parentheses
     autocmd!
     autocmd ColorScheme,Syntax * call rainbow_parentheses#activate()
@@ -75,6 +82,7 @@ function! rainbow_parentheses#deactivate()
     augroup END
     augroup! rainbow_parentheses
     unlet b:rainbow_max_level
+    delc RainbowParenthesesColors
   endif
 endfunction
 
