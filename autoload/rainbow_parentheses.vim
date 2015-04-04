@@ -38,11 +38,17 @@ function! s:extract_fg(line)
 endfunction
 
 function! s:extract_colors()
-  redir => colors
+  redir => output
     silent hi
   redir END
-  let lines = filter(split(colors, '\n'), 'v:val =~# "fg" && v:val !~# "bg"')
-  return map(s:uniq(reverse(map(lines, 's:extract_fg(v:val)'))), 's:colors_to_hi(v:val)')
+  let lines = filter(split(output, '\n'), 'v:val =~# "fg" && v:val !~# "bg"')
+  let colors = s:uniq(reverse(map(lines, 's:extract_fg(v:val)')))
+  let blacklist = {}
+  for c in get(g:, 'rainbow#blacklist', [])
+    let blacklist[c] = 1
+  endfor
+  let colors = filter(colors, '!has_key(blacklist, v:val[0]) && !has_key(blacklist, v:val[1])')
+  return map(colors, 's:colors_to_hi(v:val)')
 endfunction
 
 function! s:show_colors()
