@@ -32,9 +32,22 @@ function! s:colors_to_hi(colors)
 endfunction
 
 function! s:extract_fg(line)
-  let cterm = get(matchlist(a:line, 'ctermfg=\(\S*\)'), 1, '')
-  let gui = get(matchlist(a:line, 'guifg=\(\S*\)'), 1, '')
+  let cterm = matchstr(a:line, 'ctermfg=\zs\S*\ze')
+  let gui   = matchstr(a:line, 'guifg=\zs\S*\ze')
   return [cterm, gui]
+endfunction
+
+function! s:blacklist()
+  redir => output
+    silent hi Normal
+  redir END
+  let line  = split(output, '\n')[0]
+  let cterm = matchstr(line, 'ctermbg=\zs\S*\ze')
+  let gui   = matchstr(line, 'guibg=\zs\S*\ze')
+  let blacklist = {}
+  if !empty(cterm) | let blacklist[cterm] = 1 | endif
+  if !empty(gui)   | let blacklist[gui]   = 1 | endif
+  return blacklist
 endfunction
 
 function! s:extract_colors()
@@ -43,7 +56,7 @@ function! s:extract_colors()
   redir END
   let lines = filter(split(output, '\n'), 'v:val =~# "fg" && v:val !~# "bg"')
   let colors = s:uniq(reverse(map(lines, 's:extract_fg(v:val)')))
-  let blacklist = {}
+  let blacklist = s:blacklist()
   for c in get(g:, 'rainbow#blacklist', [])
     let blacklist[c] = 1
   endfor
