@@ -26,11 +26,14 @@ Plug 'junegunn/rainbow_parentheses.vim'
 " Toggle
 :RainbowParentheses!!
 
-" Activate it by default
-autocmd VimEnter * RainbowParentheses
-
 " See the enabled colors
 :RainbowParenthesesColors
+
+" Activate it on based on file type
+augroup rainbow_lisp
+  autocmd!
+  autocmd FileType lisp,clojure,scheme RainbowParentheses
+augroup END
 ```
 
 ## Customization
