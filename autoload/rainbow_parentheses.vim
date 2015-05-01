@@ -21,6 +21,61 @@ function! s:uniq(list)
   return ret
 endfunction
 
+" Excerpt from https://github.com/junegunn/vim-journal
+" http://stackoverflow.com/questions/27159322/rgb-values-of-the-colors-in-the-ansi-extended-colors-index-17-255
+let s:ansi16 = {
+  \ 0:  '#000000', 1:  '#800000', 2:  '#008000', 3:  '#808000',
+  \ 4:  '#000080', 5:  '#800080', 6:  '#008080', 7:  '#c0c0c0',
+  \ 8:  '#808080', 9:  '#ff0000', 10: '#00ff00', 11: '#ffff00',
+  \ 12: '#0000ff', 13: '#ff00ff', 14: '#00ffff', 15: '#ffffff' }
+function! s:rgb(color)
+  if a:color[0] == '#'
+    let r = str2nr(a:color[1:2], 16)
+    let g = str2nr(a:color[3:4], 16)
+    let b = str2nr(a:color[5:6], 16)
+    return [r, g, b]
+  endif
+
+  let ansi = str2nr(a:color)
+
+  if ansi < 16
+    return s:rgb(s:ansi16[ansi])
+  endif
+
+  if ansi >= 232
+    let v = (ansi - 232) * 10 + 8
+    return [v, v, v]
+  endif
+
+  let r = (ansi - 16) / 36
+  let g = ((ansi - 16) % 36) / 6
+  let b = (ansi - 16) % 6
+
+  return map([r, g, b], 'v:val > 0 ? (55 + v:val * 40) : 0')
+endfunction
+
+" http://stackoverflow.com/questions/596216/formula-to-determine-brightness-of-rgb-color
+" http://alienryderflex.com/hsp.html
+function! s:brightness_(rgb)
+  let [max, min] = map([max(a:rgb), min(a:rgb)], 'v:val / 255.0')
+  let [r, g, b]  = map(a:rgb, 'v:val / 255.0')
+  if max == min
+    return (max + min) / 2.0
+  endif
+  return sqrt(0.299 * r * r + 0.587 * g * g + 0.114 * b * b)
+endfunction
+
+let s:brightness = {}
+function! s:brightness(color)
+  let color = filter(copy(a:color), '!empty(v:val)')[0]
+  if has_key(s:brightness, color)
+    return s:brightness[color]
+  endif
+  let b = s:brightness_(s:rgb(color))
+  let s:brightness[color] = b
+  return b
+endfunction
+
 function! s:colors_to_hi(colors)
   return
     \ join(
@@ -47,21 +102,46 @@ function! s:blacklist()
   let blacklist = {}
   if !empty(cterm) | let blacklist[cterm] = 1 | endif
   if !empty(gui)   | let blacklist[gui]   = 1 | endif
-  return blacklist
+  return [blacklist, s:extract_fg(line)]
 endfunction
 
+let s:colors = { 'light': {}, 'dark': {} }
 function! s:extract_colors()
+  if exists('g:colors_name') && has_key(s:colors[&background], g:colors_name)
+    return s:colors[&background][g:colors_name]
+  endif
   redir => output
     silent hi
   redir END
   let lines = filter(split(output, '\n'), 'v:val =~# "fg" && v:val !~# "bg"')
   let colors = s:uniq(reverse(map(lines, 's:extract_fg(v:val)')))
-  let blacklist = s:blacklist()
+  let [blacklist, fg] = s:blacklist()
   for c in get(g:, 'rainbow#blacklist', [])
     let blacklist[c] = 1
   endfor
-  let colors = filter(colors, '!has_key(blacklist, v:val[0]) && !has_key(blacklist, v:val[1])')
-  return map(colors, 's:colors_to_hi(v:val)')
+  let colors = filter(colors,
+        \ '!has_key(blacklist, v:val[0]) && !has_key(blacklist, v:val[1])')
+
+  if !empty(filter(copy(fg), '!empty(v:val)'))
+    let nb = s:brightness(fg)
+    let [first, second] = [[], []]
+    for cpair in colors
+      let b = s:brightness(cpair)
+      let diff = abs(nb - b)
+      if diff <= 0.25
+        call add(first, cpair)
+      elseif diff <= 0.5
+        call add(second, cpair)
+      endif
+    endfor
+    let colors = extend(first, second)
+  endif
+
+  let colors = map(colors, 's:colors_to_hi(v:val)')
+  if exists('g:colors_name')
+    let s:colors[&background][g:colors_name] = colors
+  endif
+  return colors
 endfunction
 
 function! s:show_colors()
