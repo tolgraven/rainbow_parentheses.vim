@@ -94,7 +94,7 @@ endfunction
 
 function! s:blacklist()
   redir => output
-    silent hi Normal
+    silent! hi Normal
   redir END
   let line  = split(output, '\n')[0]
   let cterm = matchstr(line, 'ctermbg=\zs\S*\ze')
