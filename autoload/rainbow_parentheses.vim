@@ -172,7 +172,7 @@ function! rainbow_parentheses#activate(...)
   command! -bang -nargs=? -bar RainbowParenthesesColors call s:show_colors()
   augroup rainbow_parentheses
     autocmd!
-    if !get(g:, 'rainbow#auto', 1)
+    if get(g:, 'rainbow#auto', 1)
       autocmd ColorScheme,Syntax * call rainbow_parentheses#activate(1)
     endif
   augroup END
