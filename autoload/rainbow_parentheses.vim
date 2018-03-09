@@ -165,7 +165,7 @@ function! rainbow_parentheses#activate(...)
 
   for level in range(1, s:max_level)
     let col = colors[(level - 1) % len(colors)]
-    execute printf('hi rainbowParensShell%d %s', s:max_level - level + 1, col)
+    execute printf('hi def rainbowParensShell%d %s', s:max_level - level + 1, col)
   endfor
   call s:regions(s:max_level)
 
